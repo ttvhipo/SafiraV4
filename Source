@@ -6,7 +6,7 @@ function notify(message)
     OrionLib:MakeNotification({
         Name = "Notification",
         Content = message,
-        Image = "rbxassetid://4483345998",
+        Image = "rbxassetid://4632517063",
         Time = 5
     })
 end
@@ -14,7 +14,7 @@ end
 OrionLib:MakeNotification({
     Name = "Removing AntiCheat",
     Content = "Notification",
-    Image = "rbxassetid://4483345998",
+    Image = "rbxassetid://4632517063",
     Time = 5
 })
 
@@ -25,14 +25,14 @@ local Window = OrionLib:MakeWindow({
     ConfigFolder = "SafiraV4",
     IntroEnabled = true,  -- Enable intro animation
     IntroText = "Safira V4",  -- Intro text
-    IntroIcon = "rbxassetid://4483345998",  -- Replace with your preferred icon if needed
+    IntroIcon = "rbxassetid://4632517063",  -- Replace with your preferred icon if needed
 })
 
 -- Player Tab --
 
 local PlayerTab = Window:MakeTab({
     Name = "Player",
-    Icon = "rbxassetid://4483345998",
+    Icon = "rbxassetid://4632517063",
     PremiumOnly = false
 })
 
