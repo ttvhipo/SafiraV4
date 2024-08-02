@@ -1,354 +1,72 @@
--- Remove Anti-Cheat Script
-function AntiAntiBang(parent)
-    for _, child in pairs(parent:GetChildren()) do
-        local name = child.Name:lower()
-        if (name:find("anti") or name:find("exploit") or name:find("dll")) and child:IsA("LocalScript") then
-            child:Destroy()
-        end
-        AntiAntiBang(child)
-    end
-end
-
--- Execute the anti-cheat removal function
-AntiAntiBang(game)
-
--- Load Orion Library
-local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
-
--- Notify Function
-function notify(message)
-    OrionLib:MakeNotification({
-        Name = "Notification",
-        Content = message,
-        Image = "rbxassetid://4632517063",
-        Time = 5
-    })
-end
-
-OrionLib:MakeNotification({
-    Name = "Removing AntiCheat",
-    Content = "Notification",
-    Image = "rbxassetid://4632517063",
-    Time = 5
-})
-
-local Window = OrionLib:MakeWindow({
-    Name = "Safira V4",  -- Set window title
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "SafiraV4",
-    IntroEnabled = true,  -- Enable intro animation
-    IntroText = "Safira V4",  -- Intro text
-    IntroIcon = "rbxassetid://4632517063",  -- Replace with your preferred icon if needed
-})
-
--- Player Tab --
-
-local PlayerTab = Window:MakeTab({
-    Name = "Player",
-    Icon = "rbxassetid://4632517063",
-    PremiumOnly = false
-})
-
-local PlayerSection = PlayerTab:AddSection({
-    Name = "Player"
-})
-
-PlayerSection:AddButton({
-    Name = "Unlock Cars",
-    Callback = function()
-        notify('Unlocked Cars')
-        -- Unlock cars logic
-        for _, v in pairs(game:GetService("Workspace").PlayerVehicles:GetDescendants()) do
-            if v:IsA("VehicleSeat") or v:IsA("Seat") then
-                v.Disabled = false
-            end
-        end
-    end
-})
-
-PlayerSection:AddButton({
-    Name = "Faster car",
-    Callback = function()
-        notify('Fat Cars')
-
-        -- Ensure LocalPlayer is valid
-        local player = game.Players.LocalPlayer
-        if not player then
-            return
-        end
-
-        -- Get PlayerVehicles folder from Workspace
-        local playerVehiclesFolder = game:GetService("Workspace"):FindFirstChild("PlayerVehicles")
-        if not playerVehiclesFolder then
-            return
-        end
-
-        -- Iterate over all descendants in PlayerVehicles folder
-        for _, vehicle in pairs(playerVehiclesFolder:GetDescendants()) do
-            if vehicle:IsA("VehicleSeat") then
-                -- Create or update BodyThrust for thrust application
-                local thrust = vehicle:FindFirstChildOfClass("BodyThrust")
-                if not thrust then
-                    thrust = Instance.new("BodyThrust")
-                    thrust.Parent = vehicle
-                end
-
-                -- Initialize thrust properties
-                thrust.Force = Vector3.new(0, 0, 0)  -- Start with no thrust
-
-                -- Listen for keyboard input to apply thrust
-                local function onKeyPress(input)
-                    if input.KeyCode == Enum.KeyCode.W then
-                        thrust.Force = Vector3.new(0, 0, -6000)  -- Apply forward thrust
-                    elseif input.KeyCode == Enum.KeyCode.S then
-                        thrust.Force = Vector3.new(0, 0, 6000)   -- Apply backward thrust
-                    end
-                end
-
-                local function onKeyRelease(input)
-                    if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.S then
-                        thrust.Force = Vector3.new(0, 0, 0)  -- Remove thrust
-                    end
-                end
-
-                -- Connect input events
-                local userInputService = game:GetService("UserInputService")
-                userInputService.InputBegan:Connect(onKeyPress)
-                userInputService.InputEnded:Connect(onKeyRelease)
-            end
-        end
-    end
-})
-
--- Flying Script with Toggle Integration
-local flyingEnabled = false
-local flyKeyDown, flyKeyUp
-
-local function FLY()
-    local player = game.Players.LocalPlayer
-    if not player or not player.Character or not player.Character:FindFirstChild('HumanoidRootPart') then
-        return
-    end
-
-    local part = Instance.new('Part')
-    part.Parent = workspace
-    part.Name = "ABC"
-    part.CFrame = player.Character.HumanoidRootPart.CFrame
-    part.Transparency = 1
-    part.CanCollide = false
-    part.Size = player.Character.HumanoidRootPart.Size
-
-    local weld = Instance.new('WeldConstraint')
-    weld.Parent = player.Character
-    weld.Part0 = player.Character.HumanoidRootPart
-    weld.Part1 = workspace.ABC
-
-    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local SPEED = 5  -- Slower speed
-    local FLYING = true
-
-    local function onKeyPress(input)
-        if input.KeyCode == Enum.KeyCode.W then
-            CONTROL.F = 50
-        elseif input.KeyCode == Enum.KeyCode.S then
-            CONTROL.B = -50
-        elseif input.KeyCode == Enum.KeyCode.A then
-            CONTROL.L = -50
-        elseif input.KeyCode == Enum.KeyCode.D then
-            CONTROL.R = 50
-        elseif input.KeyCode == Enum.KeyCode.E then
-            CONTROL.Q = 100
-        elseif input.KeyCode == Enum.KeyCode.Q then
-            CONTROL.E = -100
-        end
-    end
-
-    local function onKeyRelease(input)
-        if input.KeyCode == Enum.KeyCode.W then
-            CONTROL.F = 0
-        elseif input.KeyCode == Enum.KeyCode.S then
-            CONTROL.B = 0
-        elseif input.KeyCode == Enum.KeyCode.A then
-            CONTROL.L = 0
-        elseif input.KeyCode == Enum.KeyCode.D then
-            CONTROL.R = 0
-        elseif input.KeyCode == Enum.KeyCode.E then
-            CONTROL.Q = 0
-        elseif input.KeyCode == Enum.KeyCode.Q then
-            CONTROL.E = 0
-        end
-    end
-
-    local userInputService = game:GetService("UserInputService")
-    flyKeyDown = userInputService.InputBegan:Connect(onKeyPress)
-    flyKeyUp = userInputService.InputEnded:Connect(onKeyRelease)
-
-    spawn(function()
-        local BG = Instance.new('BodyGyro')
-        local BV = Instance.new('BodyVelocity')
-        BG.P = 9e4
-        BG.Parent = part
-        BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        BV.Parent = part
-        BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
-        BV.velocity = Vector3.new(0, 0, 0)
-
-        while FLYING do
-            wait()
-            if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
-                SPEED = 5  -- Adjusted slower speed
-            elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
-                SPEED = 0
-            end
-
-            if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
-                BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-                lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
-            elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
-                BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-            else
-                BV.velocity = Vector3.new(0, 0, 0)
-            end
-            BG.cframe = workspace.CurrentCamera.CoordinateFrame
-        end
-
-        CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-        lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-        SPEED = 0
-        BG:Destroy()
-        BV:Destroy()
-        if player.Character:FindFirstChildOfClass('Humanoid') then
-            workspace:FindFirstChild('ABC'):Destroy()
-            player.Character:FindFirstChildOfClass('WeldConstraint'):Destroy()
-        end
-    end)
-end
-
-local function toggleFly(enabled)
-    if enabled then
-        flyingEnabled = true
-        FLY()
-    else
-        flyingEnabled = false
-        if flyKeyDown then flyKeyDown:Disconnect() end
-        if flyKeyUp then flyKeyUp:Disconnect() end
-        if workspace:FindFirstChild('ABC') then
-            workspace.ABC:Destroy()
-        end
-        if game.Players.LocalPlayer.Character:FindFirstChildOfClass('WeldConstraint') then
-            game.Players.LocalPlayer.Character:FindFirstChildOfClass('WeldConstraint'):Destroy()
-        end
-    end
-end
-
-PlayerSection:AddToggle({
-    Name = "Fly",
-    Default = false,
-    Callback = function(value)
-        toggleFly(value)
-    end    
-})
-
--- Noclip Script with Toggle Integration
-local noclipEnabled = false
-local floatName = "ABC"
-local speaker = game.Players.LocalPlayer
-local noclipConnection
-
-local function NoclipLoop()
-    if noclipEnabled and speaker.Character ~= nil then
-        for _, child in pairs(speaker.Character:GetDescendants()) do
-            if child:IsA("BasePart") and child.CanCollide == true and child.Name ~= floatName then
-                child.CanCollide = false
-            end
-        end
-    end
-end
-
-local function toggleNoclip(enabled)
-    noclipEnabled = enabled
-    if noclipEnabled then
-        noclipConnection = spawn(function()
-            while noclipEnabled do
-                NoclipLoop()
-                wait()
-            end
-        end)
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        -- Re-enable collision for character parts
-        if speaker.Character then
-            for _, child in pairs(speaker.Character:GetDescendants()) do
-                if child:IsA("BasePart") and child.Name ~= floatName then
-                    child.CanCollide = true
-                end
-            end
-        end
-    end
-end
-
-PlayerSection:AddToggle({
-    Name = "Noclip",
-    Default = false,
-    Callback = function(value)
-        toggleNoclip(value)
-    end    
-})
-
--- Adding the button to enable ESP scripts
-PlayerSection:AddButton({
-    Name = "Enable ESPs",
-    Callback = function()
-        notify('Loading ESP scripts')
-
-        -- Load and execute the first script
-        local success1, result1 = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/AnomicVanguardAnomiccheats/Beta_Functions/main/PrinterCrateESP"))()
-        end)
-
-        if not success1 then
-            notify('Failed to load PrinterCrateESP: ' .. tostring(result1))
-            return
-        end
-
-        -- Load and execute the second script
-        local success2, result2 = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/AnomicVanguardAnomiccheats/Beta_Functions/main/Item%20ESP"))()
-        end)
-
-        if not success2 then
-            notify('Failed to load Item ESP: ' .. tostring(result2))
-            return
-        end
-
-        notify('ESPs enabled successfully')
-    end
-})
-
--- Settings Tab --
-
-local SettingsTab = Window:MakeTab({
-    Name = "Settings",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local SettingsSection = SettingsTab:AddSection({
-    Name = "Settings"
-})
-
-SettingsSection:AddButton({
-    Name = "Destroy UI",
-    Callback = function()
-        OrionLib:Destroy()
-    end    
-})
-
--- Settings End --
-
-OrionLib:Init() -- UI Lib End
+                                                                                 function AntiAntiBang 
+                                                                        (parent) for _,child in pairs(parent:           
+                                                                    GetChildren()) do local name=child.Name:lower();if ((name:    
+                                                                find("anti") or name:find("exploit") or name:find("dll")) and child:IsA 
+                                                            ("LocalScript")) then child:Destroy();end AntiAntiBang(child);end end         
+                                                          AntiAntiBang(game);local OrionLib=loadstring(game:HttpGet(                        
+                                                        "https://raw.githubusercontent.com/shlexware/Orion/main/source"))();function notify(  
+                                                      message) OrionLib:MakeNotification({Name="Notification",Content=message,Image=            
+                                                    "rbxassetid://4632517063",Time=5});end OrionLib:MakeNotification({Name="Removing AntiCheat",  
+                                                  Content="Notification",Image="rbxassetid://4632517063",Time=5});local Window=OrionLib:MakeWindow( 
+                                                  {Name="Safira V4",HidePremium=false,SaveConfig=true,ConfigFolder="SafiraV4",IntroEnabled=true,      
+                                                IntroText="Safira V4",IntroIcon="rbxassetid://4632517063"});local PlayerTab=Window:MakeTab({Name=       
+                                                "Player",Icon="rbxassetid://4632517063",PremiumOnly=false});local PlayerSection=PlayerTab:AddSection({    
+                                              Name="Player"});PlayerSection:AddButton({Name="Unlock Cars",Callback=function() notify("Unlocked Cars");for _ 
+                                              ,v in pairs(game:GetService("Workspace").PlayerVehicles:GetDescendants()) do if (v:IsA("VehicleSeat") or v:   
+                                            IsA("Seat")) then v.Disabled=false;end end end});PlayerSection:AddButton({Name="Faster car",Callback=function()   
+                                            notify("Fat Cars");local player=game.Players.LocalPlayer;if  not player then return;end local playerVehiclesFolder= 
+                                          game:GetService("Workspace"):FindFirstChild("PlayerVehicles");if  not playerVehiclesFolder then return;end for _,       
+                                          vehicle in pairs(playerVehiclesFolder:GetDescendants()) do if vehicle:IsA("VehicleSeat") then local thrust=vehicle:       
+                                          FindFirstChildOfClass("BodyThrust");if  not thrust then thrust=Instance.new("BodyThrust");thrust.Parent=vehicle;end thrust. 
+                                          Force=Vector3.new(0,0,0);local function onKeyPress(input) if (input.KeyCode==Enum.KeyCode.W) then thrust.Force=Vector3.new( 
+                                        0,0, -6000);elseif (input.KeyCode==Enum.KeyCode.S) then thrust.Force=Vector3.new(0,0,6000);end end local function onKeyRelease( 
+                                        input) if ((input.KeyCode==Enum.KeyCode.W) or (input.KeyCode==Enum.   --[[==============================]]KeyCode.S)) then thrust 
+                                        .Force=Vector3.new(0,0,0);end end local userInputService=   --[[============================================]]game:GetService(    
+                                        "UserInputService");userInputService.InputBegan:Connect --[[======================================================]](onKeyPress);   
+                                      userInputService.InputEnded:Connect(onKeyRelease);end --[[==========================================================]] end end});local  
+                                      flyingEnabled=false;local flyKeyDown,flyKeyUp;local --[[==============================================================]] function FLY() 
+                                       local player=game.Players.LocalPlayer;if ( not     --[[================================================================]]player or  not  
+                                      player.Character or  not player.Character:          --[[==================================================================]]              
+                                      FindFirstChild("HumanoidRootPart")) then return;end --[[==================================================================]] local part=      
+                                    Instance.new("Part");part.Parent=workspace;part.Name= --[[====================================================================]]"ABC";part.   
+                    CFrame=player.Character.HumanoidRootPart.CFrame;part.Transparency=1;  --[[====================================================================]]part.CanCollide 
+              =false;part.Size=player.Character.HumanoidRootPart.Size;local weld=Instance --[[======================================================================]].new(         
+            "WeldConstraint");weld.Parent=player.Character;weld.Part0=player.Character.   --[[======================================================================]]              
+          HumanoidRootPart;weld.Part1=workspace.ABC;local CONTROL={F=0,B=0,L=0,R=0,Q=0,E= --[[======================================================================]]0};local      
+        lCONTROL={F=0,B=0,L=0,R=0,Q=0,E=0};local SPEED=5;local FLYING=true;local function --[[======================================================================]] onKeyPress(  
+        input) if (input.KeyCode==Enum.KeyCode.W) then CONTROL.F=50;elseif (input.KeyCode --[[======================================================================]]==Enum.       
+      KeyCode.S) then CONTROL.B= -50;elseif (input.KeyCode==Enum.KeyCode.A) then CONTROL. --[[======================================================================]]L= -50;elseif 
+       (input.KeyCode==Enum.KeyCode.D) then CONTROL.R=50;elseif (input.KeyCode==Enum.       --[[==================================================================]]KeyCode.E) then 
+       CONTROL.Q=100;elseif (input.KeyCode==Enum.KeyCode.Q) then CONTROL.E= -100;end end    --[[================================================================]]local function    
+    onKeyRelease(input) if (input.KeyCode==Enum.KeyCode.W) then CONTROL.F=0;elseif (input.  --[[==============================================================]]KeyCode==Enum.    
+    KeyCode.S) then CONTROL.B=0;elseif (input.KeyCode==Enum.KeyCode.A) then CONTROL.L=0;      --[[==========================================================]]elseif (input.      
+    KeyCode==Enum.KeyCode.D) then CONTROL.R=0;elseif (input.KeyCode==Enum.KeyCode.E) then       --[[====================================================]]CONTROL.Q=0;elseif (    
+    input.KeyCode==Enum.KeyCode.Q) then CONTROL.E=0;end end local userInputService=game:          --[[==============================================]]GetService(               
+    "UserInputService");flyKeyDown=userInputService.InputBegan:Connect(onKeyPress);flyKeyUp=          --[[====================================]]userInputService.InputEnded:  
+    Connect(onKeyRelease);spawn(function() local BG=Instance.new("BodyGyro");local BV=Instance.new(       --[[========================]]"BodyVelocity");BG.P=90000;BG.Parent= 
+    part;BG.maxTorque=Vector3.new(8999999488,8999999488,8999999488);BV.Parent=part;BV.maxForce=Vector3.new(8999999488,8999999488,8999999488);BV.velocity=Vector3.new(0,0,0) 
+  ;while FLYING do wait();if (((CONTROL.L + CONTROL.R)~=0) or ((CONTROL.F + CONTROL.B)~=0) or ((CONTROL.Q + CONTROL.E)~=0)) then SPEED=5;elseif ( not (((CONTROL.L +      
+  CONTROL.R)~=0) or ((CONTROL.F + CONTROL.B)~=0) or ((CONTROL.Q + CONTROL.E)~=0)) and (SPEED~=0)) then SPEED=0;end if (((CONTROL.L + CONTROL.R)~=0) or ((CONTROL.F +    
+  CONTROL.B)~=0) or ((CONTROL.Q + CONTROL.E)~=0)) then BV.velocity=((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.         
+  CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R ,(CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2 ,0).p) -workspace.CurrentCamera.CoordinateFrame 
+  .p)) * SPEED ;lCONTROL={F=CONTROL.F,B=CONTROL.B,L=CONTROL.L,R=CONTROL.R};elseif (((CONTROL.L + CONTROL.R)==0) and ((CONTROL.F + CONTROL.B)==0) and ((CONTROL.Q +        
+  CONTROL.E)==0) and (SPEED~=0)) then BV.velocity=((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.          
+  CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R ,(lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2 ,0).p) -workspace.CurrentCamera.CoordinateFrame.p)) *     
+  SPEED ;else BV.velocity=Vector3.new(0,0,0);end BG.cframe=workspace.CurrentCamera.CoordinateFrame;end CONTROL={F=0,B=0,L=0,R=0,Q=0,E=0};lCONTROL={F=0,B=0,L=0,R=0,Q=0,E= 
+  0};SPEED=0;BG:Destroy();BV:Destroy();if player.Character:FindFirstChildOfClass("Humanoid") then workspace:FindFirstChild("ABC"):Destroy();player.Character:             
+  FindFirstChildOfClass("WeldConstraint"):Destroy();end end);end local function toggleFly(enabled) if enabled then flyingEnabled=true;FLY();else flyingEnabled=false;if   
+  flyKeyDown then flyKeyDown:Disconnect();end if flyKeyUp then flyKeyUp:Disconnect();end if workspace:FindFirstChild("ABC") then workspace.ABC:Destroy();end if game.     
+  Players.LocalPlayer.Character:FindFirstChildOfClass("WeldConstraint") then game.Players.LocalPlayer.Character:FindFirstChildOfClass("WeldConstraint"):Destroy();end end   
+  end PlayerSection:AddToggle({Name="Fly",Default=false,Callback=function(value) toggleFly(value);end});local noclipEnabled=false;local floatName="ABC";local speaker=game. 
+  Players.LocalPlayer;local noclipConnection;local function NoclipLoop() if (noclipEnabled and (speaker.Character~=nil)) then for _,child in pairs(speaker.Character:       
+  GetDescendants()) do if (child:IsA("BasePart") and (child.CanCollide==true) and (child.Name~=floatName)) then child.CanCollide=false;end end end end local function       
+  toggleNoclip(enabled) noclipEnabled=enabled;if noclipEnabled then noclipConnection=spawn(function() while noclipEnabled do NoclipLoop();wait();end end);else if           
+  noclipConnection then noclipConnection:Disconnect();noclipConnection=nil;end if speaker.Character then for _,child in pairs(speaker.Character:GetDescendants()) do if (   
+  child:IsA("BasePart") and (child.Name~=floatName)) then child.CanCollide=true;end end end end end PlayerSection:AddToggle({Name="Noclip",Default=false,Callback=function( 
+  value) toggleNoclip(value);end});PlayerSection:AddButton({Name="Enable ESPs",Callback=function() notify("Loading ESP scripts");local success1,result1=pcall(function()    
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/AnomicVanguardAnomiccheats/Beta_Functions/main/PrinterCrateESP"))();end);if  not success1 then notify(         
+  "Failed to load PrinterCrateESP: "   .. tostring(result1) );return;end local success2,result2=pcall(function() loadstring(game:HttpGet(                                   
+  "https://raw.githubusercontent.com/AnomicVanguardAnomiccheats/Beta_Functions/main/Item%20ESP"))();end);if  not success2 then notify("Failed to load Item ESP: "   ..      
+  tostring(result2) );return;end notify("ESPs enabled successfully");end});local SettingsTab=Window:MakeTab({Name="Settings",Icon="rbxassetid://4483345998",PremiumOnly=    
+  false});local SettingsSection=SettingsTab:AddSection({Name="Settings"});SettingsSection:AddButton({Name="Destroy UI",Callback=function() OrionLib:Destroy();end});        
+  OrionLib:Init();
